@@ -134,12 +134,12 @@
                             datasets: [{
                                 label: chartLabel,
                                 data: seriesData,
-                                backgroundColor: chartType === 'bar' ? seriesData.map(value => value === 1 ? '#28a745' : '#dc3545') : 'rgba(75, 192, 192, 0.7)', // Green for Up, Red for Down, or teal for line
-                                borderColor: chartType === 'line' ? '#4bc0c0' : undefined,
+                                backgroundColor: chartType === 'bar' ? seriesData.map(value => value === 1 ? '#28a745' : '#dc3545') : 'rgba(102, 126, 234, 0.7)', // Green for Up, Red for Down, or purple-blue for line
+                                borderColor: chartType === 'line' ? '#667eea' : undefined,
                                 borderWidth: 1,
                                 fill: chartType === 'line' ? {
                                     target: 'origin',
-                                    above: 'rgba(75, 192, 192, 0.3)', // Area fill for line chart
+                                    above: 'rgba(102, 126, 234, 0.3)', // Area fill for line chart
                                 } : false,
                                 tension: chartType === 'line' ? 0.4 : undefined, // Smooth curve for line chart
                             }]
