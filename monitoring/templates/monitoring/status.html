@@ -91,81 +91,77 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            document.querySelectorAll('.chart-canvas').forEach(function(canvas) {
-                const serviceId = canvas.id.split('-')[1];
-                const labels = JSON.parse(canvas.getAttribute('data-labels') || '[]');
-                const rawData = JSON.parse(canvas.getAttribute('data-rt-data') || canvas.getAttribute('data-up-data') || '[]');
-                const chartType = canvas.id.startsWith('responseTimeChart-') ? 'line' : 'bar';
-                const chartLabel = canvas.id.startsWith('responseTimeChart-') ? 'Response Time (s)' : 'Uptime (1=Up, 0=Down)';
+            document.querySelectorAll('.chart-canvas').forEach(function(chartContainer) {
+                const labels = JSON.parse(chartContainer.getAttribute('data-labels') || '[]');
+                const rawData = JSON.parse(chartContainer.getAttribute('data-rt-data') || chartContainer.getAttribute('data-up-data') || '[]');
+                const chartType = chartContainer.id.startsWith('responseTimeChart-') ? 'line' : 'bar';
+                const chartLabel = chartContainer.id.startsWith('responseTimeChart-') ? 'Response Time (s)' : 'Uptime (1=Up, 0=Down)';
 
                 if (labels.length > 0 && rawData.length > 0) {
                     const seriesData = rawData.map(value => parseFloat(value));
 
-                    const options = {
-                        chart: {
-                            type: chartType,
-                            height: 300,
-                            toolbar: {
-                                show: false
-                            }
-                        },
-                        series: [{
-                            name: chartLabel,
-                            data: seriesData
-                        }],
-                        xaxis: {
-                            categories: labels,
-                            title: {
-                                text: 'Time'
-                            }
-                        },
-                        yaxis: {
-                            title: {
-                                text: chartLabel
-                            },
-                            min: chartType === 'bar' ? 0 : undefined,
-                            max: chartType === 'bar' ? 1 : undefined,
-                            tickAmount: chartType === 'bar' ? 1 : undefined,
-                        },
-                        stroke: {
-                            curve: 'smooth',
-                            colors: ['#4bc0c0']
-                        },
-                        fill: {
-                            type: 'gradient',
-                            gradient: {
-                                shadeIntensity: 1,
-                                opacityFrom: 0.7,
-                                opacityTo: 0.9,
-                                stops: [0, 100]
-                            },
-                            colors: ['#4bc0c0']
-                        },
-                        markers: { size: 0 },
-                        grid: { borderColor: '#f1f1f1' },
-                        dataLabels: { enabled: false },
-                        tooltip: {
-                            x: { show: true }
-                        }
-                    };
+                    const canvasElement = document.createElement('canvas');
+                    chartContainer.appendChild(canvasElement);
 
-                    if (chartType === 'bar') {
-                        options.plotOptions = {
-                            bar: {
-                                colors: {
-                                    ranges: [
-                                        { from: 1, to: 1, color: '#4bc0c0' },
-                                        { from: 0, to: 0, color: '#ff6384' }
-                                    ]
+                    const ctx = canvasElement.getContext('2d');
+                    new Chart(ctx, {
+                        type: chartType,
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: chartLabel,
+                                data: seriesData,
+                                backgroundColor: chartType === 'bar' ? seriesData.map(value => value === 1 ? '#28a745' : '#dc3545') : 'rgba(75, 192, 192, 0.7)', // Green for Up, Red for Down, or teal for line
+                                borderColor: chartType === 'line' ? '#4bc0c0' : undefined,
+                                borderWidth: 1,
+                                fill: chartType === 'line' ? {
+                                    target: 'origin',
+                                    above: 'rgba(75, 192, 192, 0.3)', // Area fill for line chart
+                                } : false,
+                                tension: chartType === 'line' ? 0.4 : undefined, // Smooth curve for line chart
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    display: false
+                                },
+                                tooltip: {
+                                    mode: 'index',
+                                    intersect: false,
+                                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                    titleColor: '#fff',
+                                    bodyColor: '#fff',
+                                    borderColor: '#4bc0c0',
+                                    borderWidth: 1
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    title: {
+                                        display: true,
+                                        text: 'Time'
+                                    }
+                                },
+                                y: {
+                                    title: {
+                                        display: true,
+                                        text: chartLabel
+                                    },
+                                    beginAtZero: chartType === 'bar',
+                                    max: chartType === 'bar' ? 1 : undefined,
+                                    ticks: {
+                                        stepSize: chartType === 'bar' ? 1 : undefined
+                                    }
                                 }
                             }
-                        };
-                    }
-
-                    new ApexCharts(canvas, options).render();
+                        }
+                    });
                 }
             });
         });
