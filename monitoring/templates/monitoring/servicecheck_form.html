@@ -1,0 +1,17 @@
+{% extends 'monitoring/base.html' %}
+
+{% block title %}
+    {% if form.instance.pk %}Edit Service Check{% else %}Add Service Check{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>{% if form.instance.pk %}Edit Service Check{% else %}Add Service Check{% endif %}</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-success">Save</button>
+        <a href="{% url 'monitoring:servicecheck_list' %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

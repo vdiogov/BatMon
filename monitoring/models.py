@@ -1,5 +1,6 @@
 from django.db import models
 from django_celery_beat.models import PeriodicTask, IntervalSchedule
+from django.utils import timezone
 import json
 
 class ServiceCheck(models.Model):
@@ -35,8 +36,10 @@ class ServiceCheck(models.Model):
         return self.name
 
     def save(self, *args, **kwargs):
-        # Create or update the Celery PeriodicTask
-        if not self.pk:  # New ServiceCheck
+        is_new = not self.pk
+        super().save(*args, **kwargs)  # Save the instance first to ensure self.id is available
+
+        if is_new:
             schedule, created = IntervalSchedule.objects.get_or_create(
                 every=self.interval,
                 period=IntervalSchedule.SECONDS,
@@ -45,17 +48,37 @@ class ServiceCheck(models.Model):
                 interval=schedule,
                 name=f'Service Check: {self.name}',
                 task='monitoring.tasks.run_service_check', # Task to be executed
-                args=json.dumps([self.id]),
+                args=json.dumps([self.id]), # Pass the ID as a JSON-encoded list
                 enabled=True,
             )
         else:  # Existing ServiceCheck
             if self.periodic_task:
-                self.periodic_task.interval.every = self.interval
-                self.periodic_task.interval.save()
-                self.periodic_task.args = json.dumps([self.id])
+                # Ensure the schedule is updated or created if it doesn't exist
+                schedule, created = IntervalSchedule.objects.get_or_create(
+                    every=self.interval,
+                    period=IntervalSchedule.SECONDS,
+                )
+                self.periodic_task.interval = schedule
                 self.periodic_task.name = f'Service Check: {self.name}'
+                self.periodic_task.task = 'monitoring.tasks.run_service_check'
+                self.periodic_task.args = json.dumps([self.id])
+                self.periodic_task.enabled = True
                 self.periodic_task.save()
-        super().save(*args, **kwargs)
+            else: # If for some reason periodic_task is null for an existing service check, create it
+                schedule, created = IntervalSchedule.objects.get_or_create(
+                    every=self.interval,
+                    period=IntervalSchedule.SECONDS,
+                )
+                self.periodic_task = PeriodicTask.objects.create(
+                    interval=schedule,
+                    name=f'Service Check: {self.name}',
+                    task='monitoring.tasks.run_service_check',
+                    args=json.dumps([self.id]), # Pass the ID as a JSON-encoded list
+                    enabled=True,
+                )
+        # Ensure the periodic_task foreign key is saved if it was just created or updated
+        if is_new or (self.periodic_task and not self.periodic_task.pk):
+            super().save(update_fields=['periodic_task'])
 
     def delete(self, *args, **kwargs):
         if self.periodic_task:

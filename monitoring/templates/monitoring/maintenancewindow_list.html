@@ -1,0 +1,40 @@
+{% extends 'monitoring/base.html' %}
+
+{% block title %}Maintenance Windows{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Maintenance Windows</h2>
+    <a href="{% url 'monitoring:maintenancewindow_create' %}" class="btn btn-primary mb-3">Add New Maintenance Window</a>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Service</th>
+                <th>Start Time</th>
+                <th>End Time</th>
+                <th>Active</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for mw in maintenancewindows %}
+            <tr>
+                <td>{% if mw.service %}{{ mw.service.name }}{% else %}Global{% endif %}</td>
+                <td>{{ mw.start_time }}</td>
+                <td>{{ mw.end_time }}</td>
+                <td>{% if mw.active %}Yes{% else %}No{% endif %}</td>
+                <td>
+                    <a href="{% url 'monitoring:maintenancewindow_detail' mw.pk %}" class="btn btn-info btn-sm">View</a>
+                    <a href="{% url 'monitoring:maintenancewindow_update' mw.pk %}" class="btn btn-warning btn-sm">Edit</a>
+                    <a href="{% url 'monitoring:maintenancewindow_delete' mw.pk %}" class="btn btn-danger btn-sm">Delete</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5">No maintenance windows found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

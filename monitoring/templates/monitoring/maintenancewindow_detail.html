@@ -1,0 +1,17 @@
+{% extends 'monitoring/base.html' %}
+
+{% block title %}Maintenance Window: {% if maintenancewindow.service %}{{ maintenancewindow.service.name }}{% else %}Global{% endif %}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Maintenance Window: {% if maintenancewindow.service %}{{ maintenancewindow.service.name }}{% else %}Global{% endif %}</h2>
+    <p><strong>Service:</strong> {% if maintenancewindow.service %}{{ maintenancewindow.service.name }}{% else %}Global{% endif %}</p>
+    <p><strong>Start Time:</strong> {{ maintenancewindow.start_time }}</p>
+    <p><strong>End Time:</strong> {{ maintenancewindow.end_time }}</p>
+    <p><strong>Reason:</strong> {{ maintenancewindow.reason }}</p>
+    <p><strong>Active:</strong> {% if maintenancewindow.active %}Yes{% else %}No{% endif %}</p>
+    <a href="{% url 'monitoring:maintenancewindow_update' maintenancewindow.pk %}" class="btn btn-warning">Edit</a>
+    <a href="{% url 'monitoring:maintenancewindow_delete' maintenancewindow.pk %}" class="btn btn-danger">Delete</a>
+    <a href="{% url 'monitoring:maintenancewindow_list' %}" class="btn btn-secondary">Back to List</a>
+</div>
+{% endblock %}

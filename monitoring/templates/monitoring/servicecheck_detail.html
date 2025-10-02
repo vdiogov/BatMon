@@ -1,0 +1,20 @@
+{% extends 'monitoring/base.html' %}
+
+{% block title %}Service Check: {{ servicecheck.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Service Check: {{ servicecheck.name }}</h2>
+    <p><strong>Type:</strong> {{ servicecheck.get_check_type_display }}</p>
+    <p><strong>Target:</strong> {{ servicecheck.url_or_host }}</p>
+    <p><strong>Interval:</strong> {{ servicecheck.interval }} seconds</p>
+    <p><strong>Timeout:</strong> {{ servicecheck.timeout }} seconds</p>
+    <p><strong>Status:</strong> {{ servicecheck.status_atual }}</p>
+    <p><strong>Last Check:</strong> {{ servicecheck.last_check|default:"N/A" }}</p>
+    <p><strong>Last Status Change:</strong> {{ servicecheck.last_status_change|default:"N/A" }}</p>
+    <p><strong>Active:</strong> {% if servicecheck.active %}Yes{% else %}No{% endif %}</p>
+    <a href="{% url 'monitoring:servicecheck_update' servicecheck.pk %}" class="btn btn-warning">Edit</a>
+    <a href="{% url 'monitoring:servicecheck_delete' servicecheck.pk %}" class="btn btn-danger">Delete</a>
+    <a href="{% url 'monitoring:servicecheck_list' %}" class="btn btn-secondary">Back to List</a>
+</div>
+{% endblock %}

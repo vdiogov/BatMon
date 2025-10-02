@@ -1,0 +1,40 @@
+{% extends 'monitoring/base.html' %}
+
+{% block title %}Alerts{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Alerts</h2>
+    <a href="{% url 'monitoring:alert_create' %}" class="btn btn-primary mb-3">Add New Alert</a>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Service</th>
+                <th>Type</th>
+                <th>Threshold</th>
+                <th>Active</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for alert in alerts %}
+            <tr>
+                <td>{{ alert.service.name }}</td>
+                <td>{{ alert.get_alert_type_display }}</td>
+                <td>{{ alert.threshold }}</td>
+                <td>{% if alert.active %}Yes{% else %}No{% endif %}</td>
+                <td>
+                    <a href="{% url 'monitoring:alert_detail' alert.pk %}" class="btn btn-info btn-sm">View</a>
+                    <a href="{% url 'monitoring:alert_update' alert.pk %}" class="btn btn-warning btn-sm">Edit</a>
+                    <a href="{% url 'monitoring:alert_delete' alert.pk %}" class="btn btn-danger btn-sm">Delete</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5">No alerts found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

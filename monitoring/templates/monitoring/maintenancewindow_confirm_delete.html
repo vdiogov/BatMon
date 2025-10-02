@@ -1,0 +1,15 @@
+{% extends 'monitoring/base.html' %}
+
+{% block title %}Delete Maintenance Window{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Delete Maintenance Window</h2>
+    <p>Are you sure you want to delete the maintenance window for {% if maintenancewindow.service %}"{{ maintenancewindow.service.name }}"{% else %}all services (Global){% endif %} from {{ maintenancewindow.start_time }} to {{ maintenancewindow.end_time }}?</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Confirm Delete</button>
+        <a href="{% url 'monitoring:maintenancewindow_detail' maintenancewindow.pk %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

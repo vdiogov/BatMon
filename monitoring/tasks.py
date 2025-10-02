@@ -1,13 +1,14 @@
 from celery import shared_task
-from .models import ServiceCheck, CheckResult, Alert, MaintenanceWindow # Import Alert and MaintenanceWindow models
-from .alert_tasks import send_alert # Import send_alert task
+from .models import ServiceCheck, CheckResult, MaintenanceWindow
+from .alert_tasks import send_alert
 import subprocess
 import requests
 import socket
 import time
 from django.utils import timezone
+from django.db.models import Q
 import logging
-import json # Import json module
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -25,12 +26,14 @@ def run_service_check(service_check_arg): # Use a generic name to inspect the ra
                 logger.warning(f"JSON parsed but not a list or empty: {parsed_arg}")
         elif isinstance(service_check_arg, list) and len(service_check_arg) > 0:
             service_check_id = service_check_arg[0]
+        elif isinstance(service_check_arg, int):
+            service_check_id = service_check_arg
         else:
             logger.warning(f"Argument is not a string or list: {service_check_arg}")
 
         if service_check_id is None:
             logger.error("Could not extract service_check_id from the argument. Exiting task.")
-            return # Exit if ID cannot be determined
+            return
 
         logger.info(f"Extracted service_check_id: {service_check_id}")
         service_check = ServiceCheck.objects.get(id=service_check_id)
@@ -41,7 +44,7 @@ def run_service_check(service_check_arg): # Use a generic name to inspect the ra
             active=True,
             start_time__lte=timezone.now(),
             end_time__gte=timezone.now()
-        ).filter(models.Q(service=service_check) | models.Q(service__isnull=True)).exists()
+        ).filter(Q(service=service_check) | Q(service__isnull=True)).exists()
 
         if active_maintenance:
             logger.info(f"Service '{service_check.name}' is in maintenance. Skipping check and alerts.")
