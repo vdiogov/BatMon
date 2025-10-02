@@ -9,9 +9,105 @@
     <h2>{% if form.instance.pk %}Edit Alert{% else %}Add Alert{% endif %}</h2>
     <form method="post">
         {% csrf_token %}
-        {{ form.as_p }}
+        {% for field in form %}
+            {% if field.name == 'service' or field.name == 'alert_type' or field.name == 'trigger' or field.name == 'trigger_value' or field.name == 'active' %}
+                <div class="mb-3">
+                    <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.help_text %}
+                        <div class="form-text">{{ field.help_text }}</div>
+                    {% endif %}
+                    {% for error in field.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% else %} {# These are the dynamic fields #}
+                <div id="div-{{ field.name }}" class="mb-3 alert-type-field" style="display: none;">
+                    <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.help_text %}
+                        <div class="form-text">{{ field.help_text }}</div>
+                    {% endif %}
+                    {% for error in field.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endfor %}
         <button type="submit" class="btn btn-success">Save</button>
         <a href="{% url 'monitoring:alert_list' %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const alertTypeSelect = document.getElementById('id_alert_type');
+        const emailAddressField = document.getElementById('div-email_address');
+        const emailSubjectField = document.getElementById('div-email_subject');
+        const emailMessageField = document.getElementById('div-email_message');
+
+        const telegramChatIdField = document.getElementById('div-telegram_chat_id');
+        const telegramTokenField = document.getElementById('div-telegram_token');
+        const telegramMessageField = document.getElementById('div-telegram_message');
+
+        const webhookUrlField = document.getElementById('div-webhook_url');
+        const webhookMethodField = document.getElementById('div-webhook_method');
+        const webhookHeadersField = document.getElementById('div-webhook_headers');
+        const webhookBodyField = document.getElementById('div-webhook_body');
+        const webhookUsernameField = document.getElementById('div-webhook_username');
+        const webhookPasswordField = document.getElementById('div-webhook_password');
+        
+        const commandToExecuteField = document.getElementById('div-command_to_execute');
+
+        function hideAllDynamicFields() {
+            emailAddressField.style.display = 'none';
+            emailSubjectField.style.display = 'none';
+            emailMessageField.style.display = 'none';
+
+            telegramChatIdField.style.display = 'none';
+            telegramTokenField.style.display = 'none';
+            telegramMessageField.style.display = 'none';
+
+            webhookUrlField.style.display = 'none';
+            webhookMethodField.style.display = 'none';
+            webhookHeadersField.style.display = 'none';
+            webhookBodyField.style.display = 'none';
+            webhookUsernameField.style.display = 'none';
+            webhookPasswordField.style.display = 'none';
+
+            commandToExecuteField.style.display = 'none';
+        }
+
+        function toggleFields() {
+            const selectedType = alertTypeSelect.value;
+            hideAllDynamicFields();
+
+            if (selectedType === 'email') {
+                emailAddressField.style.display = 'block';
+                emailSubjectField.style.display = 'block';
+                emailMessageField.style.display = 'block';
+            } else if (selectedType === 'telegram') {
+                telegramChatIdField.style.display = 'block';
+                telegramTokenField.style.display = 'block';
+                telegramMessageField.style.display = 'block';
+            } else if (selectedType === 'webhook') {
+                webhookUrlField.style.display = 'block';
+                webhookMethodField.style.display = 'block';
+                webhookHeadersField.style.display = 'block';
+                webhookBodyField.style.display = 'block';
+                webhookUsernameField.style.display = 'block';
+                webhookPasswordField.style.display = 'block';
+            } else if (selectedType === 'command') {
+                commandToExecuteField.style.display = 'block';
+            }
+        }
+
+        alertTypeSelect.addEventListener('change', toggleFields);
+
+        // Initial call to set the correct fields on page load (for edit view)
+        toggleFields();
+    });
+</script>
     </form>
 </div>
 {% endblock %}

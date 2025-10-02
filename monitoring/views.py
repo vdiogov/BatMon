@@ -5,6 +5,7 @@ from django.views.generic import ListView, CreateView, DetailView, UpdateView, D
 from django.urls import reverse_lazy
 from datetime import timedelta
 from django.utils import timezone
+from django.utils.timezone import localtime
 
 def status_page(request):
     services = ServiceCheck.objects.all()
@@ -30,7 +31,7 @@ def status_page(request):
         time_threshold = timezone.now() - timedelta(hours=24)
         results = service.results.filter(timestamp__gte=time_threshold).order_by('timestamp')
         
-        service.chart_labels_json = json.dumps([result.timestamp.strftime('%H:%M') for result in results])
+        service.chart_labels_json = json.dumps([localtime(result.timestamp).strftime('%H:%M') for result in results])
         service.chart_response_time_data_json = json.dumps([result.response_time if result.success else 0 for result in results])
         service.chart_uptime_data_json = json.dumps([1 if result.success else 0 for result in results]) # 1 for uptime, 0 for downtime
 
@@ -66,7 +67,7 @@ def service_detail(request, service_id):
     time_threshold = timezone.now() - timedelta(days=7)
     chart_results = service.results.filter(timestamp__gte=time_threshold).order_by('timestamp')
 
-    chart_labels_json = json.dumps([result.timestamp.strftime('%Y-%m-%d %H:%M') for result in chart_results])
+    chart_labels_json = json.dumps([localtime(result.timestamp).strftime('%Y-%m-%d %H:%M') for result in chart_results])
     chart_response_time_data_json = json.dumps([result.response_time if result.success else 0 for result in chart_results])
     chart_uptime_data_json = json.dumps([1 if result.success else 0 for result in chart_results])
 
@@ -101,7 +102,7 @@ def dashboard_view(request):
     time_threshold = timezone.now() - timedelta(hours=24)
     for service in services:
         results = service.results.filter(timestamp__gte=time_threshold).order_by('timestamp')
-        chart_labels = [result.timestamp.strftime('%H:%M') for result in results]
+        chart_labels = [localtime(result.timestamp).strftime('%H:%M') for result in results]
         chart_response_time_data = [result.response_time if result.success else 0 for result in results]
         chart_uptime_data = [1 if result.success else 0 for result in results]
         

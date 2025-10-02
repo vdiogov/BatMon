@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+{% load tz %}
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -90,7 +91,7 @@
                                 <span>
                                     <strong>{{ result.service.name }}</strong> - 
                                     {% if result.success %}✅ OK{% else %}❌ FAIL{% endif %}
-                                    ({{ result.timestamp|date:"DATETIME_FORMAT" }})
+                                    ({{ result.timestamp|localtime|date:"DATETIME_FORMAT" }})
                                 </span>
                                 <span class="badge bg-secondary rounded-pill">{{ result.response_time|default:"N/A" }}s</span>
                             </li>
@@ -112,7 +113,7 @@
                                     <strong>{{ log.alert.service.name }}</strong> - 
                                     Alert Type: {{ log.alert.get_alert_type_display }} - 
                                     {% if log.success %}✅ Sent{% else %}❌ Failed{% endif %}
-                                    ({{ log.timestamp|date:"DATETIME_FORMAT" }})
+                                    ({{ log.timestamp|localtime|date:"DATETIME_FORMAT" }})
                                 </span>
                                 <span class="badge bg-info text-dark rounded-pill">Log ID: {{ log.id }}</span>
                             </li>
@@ -133,7 +134,7 @@
                         <ul class="list-group list-group-flush">
                             {% for mw in upcoming_maintenance %}
                             <li class="list-group-item">
-                                <strong>{{ mw.title }}</strong> ({{ mw.start_time|date:"DATETIME_FORMAT" }} - {{ mw.end_time|date:"DATETIME_FORMAT" }})
+                                <strong>{{ mw.title }}</strong> ({{ mw.start_time|localtime|date:"DATETIME_FORMAT" }} - {{ mw.end_time|localtime|date:"DATETIME_FORMAT" }})
                                 {% if mw.service %} - Affects: {{ mw.service.name }}{% else %} - Global{% endif %}
                                 {% if mw.description %}<br><small>{{ mw.description }}</small>{% endif %}
                             </li>

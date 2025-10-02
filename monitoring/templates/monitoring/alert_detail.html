@@ -1,4 +1,5 @@
 {% extends 'monitoring/base.html' %}
+{% load tz %}
 
 {% block title %}Alert: {{ alert.service.name }} - {{ alert.get_alert_type_display }}{% endblock %}
 
@@ -10,7 +11,7 @@
     <p><strong>Threshold:</strong> {{ alert.threshold }}</p>
     <p><strong>Comparison:</strong> {{ alert.get_comparison_type_display }}</p>
     <p><strong>Active:</strong> {% if alert.active %}Yes{% else %}No{% endif %}</p>
-    <p><strong>Last Triggered:</strong> {{ alert.last_triggered|default:"N/A" }}</p>
+    <p><strong>Last Triggered:</strong> {{ alert.last_triggered|localtime|default:"N/A" }}</p>
     <a href="{% url 'monitoring:alert_update' alert.pk %}" class="btn btn-warning">Edit</a>
     <a href="{% url 'monitoring:alert_delete' alert.pk %}" class="btn btn-danger">Delete</a>
     <a href="{% url 'monitoring:alert_list' %}" class="btn btn-secondary">Back to List</a>

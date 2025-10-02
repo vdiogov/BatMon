@@ -1,4 +1,5 @@
 {% load static %}
+{% load tz %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -44,7 +45,7 @@
                     <span class="status-indicator status-{{ service.status_atual }}"></span>
                     {{ service.get_status_atual_display }}
                 </p>
-                <p><strong>Last Check:</strong> {{ service.last_check|default:"N/A" }}</p>
+                <p><strong>Last Check:</strong> {{ service.last_check|localtime|default:"N/A" }}</p>
             </div>
         </div>
 
@@ -94,7 +95,7 @@
                 <tbody>
                     {% for result in results %}
                     <tr class="{% if not result.success %}table-danger{% endif %}">
-                        <td>{{ result.timestamp }}</td>
+                        <td>{{ result.timestamp|localtime }}</td>
                         <td>{% if result.success %}✅{% else %}❌{% endif %}</td>
                         <td>{{ result.response_time|default:"N/A" }}</td>
                         <td>{{ result.status_code|default:"N/A" }}</td>
