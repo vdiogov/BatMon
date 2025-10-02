@@ -4,7 +4,7 @@ import requests
 import telegram
 import json
 import subprocess
-from .models import Alert, AlertLog, ServiceCheck
+from .models import Alert, AlertLog
 
 @shared_task
 def send_alert(alert_id, message):

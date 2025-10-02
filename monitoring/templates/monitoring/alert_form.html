@@ -10,7 +10,7 @@
     <form method="post">
         {% csrf_token %}
         {% for field in form %}
-            {% if field.name == 'service' or field.name == 'alert_type' or field.name == 'trigger' or field.name == 'trigger_value' or field.name == 'active' %}
+            {% if field.name == 'service' or field.name == 'alert_type' or field.name == 'trigger' or field.name == 'active' %}
                 <div class="mb-3">
                     <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
                     {{ field }}
@@ -21,7 +21,18 @@
                         <div class="text-danger">{{ error }}</div>
                     {% endfor %}
                 </div>
-            {% else %} {# These are the dynamic fields #}
+            {% elif field.name == 'trigger_value' %}
+                <div id="div-{{ field.name }}" class="mb-3" style="display: none;"> {# Initially hide trigger_value #}
+                    <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.help_text %}
+                        <div class="form-text">{{ field.help_text }}</div>
+                    {% endif %}
+                    {% for error in field.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% else %} {# These are the other dynamic fields #}
                 <div id="div-{{ field.name }}" class="mb-3 alert-type-field" style="display: none;">
                     <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
                     {{ field }}
@@ -42,6 +53,8 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const alertTypeSelect = document.getElementById('id_alert_type');
+        const triggerSelect = document.getElementById('id_trigger');
+        const triggerValueField = document.getElementById('div-trigger_value');
         const emailAddressField = document.getElementById('div-email_address');
         const emailSubjectField = document.getElementById('div-email_subject');
         const emailMessageField = document.getElementById('div-email_message');
@@ -76,11 +89,20 @@
             webhookPasswordField.style.display = 'none';
 
             commandToExecuteField.style.display = 'none';
+            triggerValueField.style.display = 'none'; // Ensure trigger_value is hidden by default
         }
 
         function toggleFields() {
             const selectedType = alertTypeSelect.value;
-            hideAllDynamicFields();
+            const selectedTrigger = triggerSelect.value; // Get selected trigger value
+            hideAllDynamicFields(); // Hide all dynamic fields first
+
+            // Show trigger_value only if 'on_fail_x_times' is selected
+            if (selectedTrigger === 'on_fail_x_times') {
+                triggerValueField.style.display = 'block';
+            } else {
+                triggerValueField.style.display = 'none';
+            }
 
             if (selectedType === 'email') {
                 emailAddressField.style.display = 'block';
@@ -103,8 +125,9 @@
         }
 
         alertTypeSelect.addEventListener('change', toggleFields);
+        triggerSelect.addEventListener('change', toggleFields); // Add event listener for trigger select
 
-        // Initial call to set the correct fields on page load (for edit view)
+        // Initial calls to set the correct fields on page load (for edit view)
         toggleFields();
     });
 </script>
