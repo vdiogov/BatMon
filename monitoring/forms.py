@@ -153,6 +153,17 @@ class AlertForm(forms.ModelForm):
         return alert
 
 class MaintenanceWindowForm(forms.ModelForm):
+    start_time = forms.DateTimeField(
+        widget=forms.DateTimeInput(attrs={'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'),
+        input_formats=['%Y-%m-%dT%H:%M'],
+        label="Start Time"
+    )
+    end_time = forms.DateTimeField(
+        widget=forms.DateTimeInput(attrs={'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'),
+        input_formats=['%Y-%m-%dT%H:%M'],
+        label="End Time"
+    )
+
     class Meta:
         model = MaintenanceWindow
-        fields = '__all__'
+        fields = ['service', 'title', 'description', 'start_time', 'end_time']

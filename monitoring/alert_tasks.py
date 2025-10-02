@@ -1,7 +1,6 @@
 from celery import shared_task
 from django.core.mail import send_mail
 import requests
-import telegram
 import json
 import subprocess
 from .models import Alert, AlertLog
@@ -29,12 +28,36 @@ def send_alert(alert_id, message):
 
         elif alert.alert_type == 'telegram':
             try:
-                bot = telegram.Bot(token=alert.config.get('bot_token'))
-                bot.send_message(chat_id=alert.config.get('chat_id'), text=message)
+                telegram_token = alert.config.get('token')
+                telegram_chat_id = alert.config.get('chat_id')
+                telegram_message = alert.config.get('message')
+
+                if not telegram_token:
+                    raise ValueError("Telegram bot token is missing in alert configuration.")
+                if not telegram_chat_id:
+                    raise ValueError("Telegram chat ID is missing in alert configuration.")
+
+                url = f"https://api.telegram.org/bot{telegram_token}/sendMessage"
+                payload = {
+                    "chat_id": telegram_chat_id,
+                    "text": telegram_message
+                }
+                
+                response = requests.post(url, data=payload, timeout=10)
+                response.raise_for_status()
+                
                 success = True
-                response_message = "Telegram message sent successfully."
-            except Exception as e:
+                response_message = f"Telegram message sent successfully. Status: {response.status_code} - Response: {response.text}"
+                print(f"Telegram API Response: {response.status_code} - {response.text}")
+            except requests.exceptions.RequestException as e:
                 response_message = f"Telegram message failed: {e}"
+                print(f"Telegram message failed: {e}")
+            except ValueError as e:
+                response_message = f"Telegram configuration error: {e}"
+                print(f"Telegram configuration error: {e}")
+            except Exception as e:
+                response_message = f"An unexpected error occurred during Telegram message sending: {e}"
+                print(f"An unexpected error occurred during Telegram message sending: {e}")
 
         elif alert.alert_type == 'webhook':
             try:

@@ -11,7 +11,7 @@
             <tr>
                 <th>Service</th>
                 <th>Type</th>
-                <th>Threshold</th>
+                <th>Trigger</th>
                 <th>Active</th>
                 <th>Actions</th>
             </tr>
@@ -21,7 +21,7 @@
             <tr>
                 <td>{{ alert.service.name }}</td>
                 <td>{{ alert.get_alert_type_display }}</td>
-                <td>{{ alert.threshold }}</td>
+                <td>{{ alert.trigger }}</td>
                 <td>{% if alert.active %}Yes{% else %}No{% endif %}</td>
                 <td>
                     <a href="{% url 'monitoring:alert_detail' alert.pk %}" class="btn btn-info btn-sm">View</a>
