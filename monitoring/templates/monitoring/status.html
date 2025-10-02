@@ -98,12 +98,52 @@
             document.querySelectorAll('.chart-canvas').forEach(function(chartContainer) {
                 const labels = JSON.parse(chartContainer.getAttribute('data-labels') || '[]');
                 const rawData = JSON.parse(chartContainer.getAttribute('data-rt-data') || chartContainer.getAttribute('data-up-data') || '[]');
-                const chartType = chartContainer.id.startsWith('responseTimeChart-') ? 'line' : 'bar';
-                const chartLabel = chartContainer.id.startsWith('responseTimeChart-') ? 'Response Time (s)' : 'Uptime (1=Up, 0=Down)';
+                const seriesData = rawData.map(value => parseFloat(value));
 
-                if (labels.length > 0 && rawData.length > 0) {
-                    const seriesData = rawData.map(value => parseFloat(value));
+                let chartType;
+                let chartLabel;
+                let datasetConfig = {};
+                let yScaleConfig = {};
 
+                if (chartContainer.id.startsWith('responseTimeChart-')) {
+                    chartType = 'line';
+                    chartLabel = 'Response Time (s)';
+                    datasetConfig = {
+                        backgroundColor: 'rgba(102, 126, 234, 0.7)',
+                        borderColor: '#667eea',
+                        fill: {
+                            target: 'origin',
+                            above: 'rgba(102, 126, 234, 0.3)',
+                        },
+                        tension: 0.4,
+                    };
+                    yScaleConfig = {
+                        beginAtZero: true,
+                    };
+                } else { // Uptime chart
+                    chartType = 'line'; // Changed from 'bar'
+                    chartLabel = 'Uptime (1=Up, 0=Down)';
+                    datasetConfig = {
+                        stepped: 'before', // Set to 'before' for step line
+                        borderColor: seriesData.map(value => value === 1 ? '#28a745' : '#dc3545'), // Green for Up, Red for Down
+                        backgroundColor: seriesData.map(value => value === 1 ? 'rgba(40, 167, 69, 0.3)' : 'rgba(220, 53, 69, 0.3)'), // Fill color
+                        fill: {
+                            target: 'origin',
+                            above: 'rgba(40, 167, 69, 0.3)', // Green for Up
+                            below: 'rgba(220, 53, 69, 0.3)' // Red for Down
+                        },
+                        tension: 0, // No tension for stepped line
+                    };
+                    yScaleConfig = {
+                        beginAtZero: true,
+                        max: 1,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    };
+                }
+
+                if (labels.length > 0 && seriesData.length > 0) {
                     const canvasElement = document.createElement('canvas');
                     chartContainer.appendChild(canvasElement);
 
@@ -115,14 +155,8 @@
                             datasets: [{
                                 label: chartLabel,
                                 data: seriesData,
-                                backgroundColor: chartType === 'bar' ? seriesData.map(value => value === 1 ? '#28a745' : '#dc3545') : 'rgba(102, 126, 234, 0.7)', // Green for Up, Red for Down, or purple-blue for line
-                                borderColor: chartType === 'line' ? '#667eea' : undefined,
                                 borderWidth: 1,
-                                fill: chartType === 'line' ? {
-                                    target: 'origin',
-                                    above: 'rgba(102, 126, 234, 0.3)', // Area fill for line chart
-                                } : false,
-                                tension: chartType === 'line' ? 0.4 : undefined, // Smooth curve for line chart
+                                ...datasetConfig
                             }]
                         },
                         options: {
@@ -154,11 +188,7 @@
                                         display: true,
                                         text: chartLabel
                                     },
-                                    beginAtZero: chartType === 'bar',
-                                    max: chartType === 'bar' ? 1 : undefined,
-                                    ticks: {
-                                        stepSize: chartType === 'bar' ? 1 : undefined
-                                    }
+                                    ...yScaleConfig
                                 }
                             }
                         }
